@@ -7,13 +7,25 @@
 _start:
     csrr t0, mhartid
     bnez t0, _wait
-    j _write_uart
+    call _setup_uart
+    call _write_uart
     wfi
 
+_setup_uart:
+    # Disable Interupts on the UART
+    li t1, 0x10000001
+    sb x0, 0(t1)
+    # Write out to the UART line control register at UART+3
+    li t1, 0x10000003
+    li t2, 0x03 # set the output to 8 bits
+    sb t2, 0(t1)
+    ret
+
 _write_uart:
-    li t1, 0x41
-    li t2, 0x10000000
-    sb t1, (t2)
+    li t1, 0x10000000
+    li t2, 0x41
+    sb t2, 0(t1)
+    ret
 
 _wait:
     wfi
